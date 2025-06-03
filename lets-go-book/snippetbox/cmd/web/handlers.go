@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"html/template"
+	//"html/template"
 	"net/http"
 	"strconv"
+	"snippetbox.ibrathesheriff.com/internal/models"
 )
 
 // Change the signature of the home handler so it is defined as a method against
@@ -14,8 +16,17 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	}
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 
-	files := []string{
+	for _, snippet := range snippets {
+		fmt.Fprintf(w, "%+v\n", snippet)
+	}
+
+	/*files := []string{
 		"./ui/html/base.tmpl",
 		"./ui/html/partials/nav.tmpl",
 		"./ui/html/pages/home.tmpl",
@@ -31,7 +42,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		app.serverError(w, err)  // Use the serverError() helper.
-	}
+	}*/
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +51,21 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)  // Use the notFound() helper.
 		return
 	}
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	// Use the SnippetModel object's Get method to retrieve the data for a
+	// specific record based on its ID. If no matching record is found,
+	// return a 404 Not Found response.
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// Write the snippet data as a plain-text HTTP response body.
+	fmt.Fprintf(w, "%+v", snippet)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
