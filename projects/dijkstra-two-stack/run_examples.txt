@@ -1,0 +1,5 @@
+Input: http://localhost:4000/evaluate?expr=(1p1)
+Expected: 2
+
+Input: http://localhost:4000/evaluate?expr=(1p((2p3)m(4m5)))
+Expected: 101
