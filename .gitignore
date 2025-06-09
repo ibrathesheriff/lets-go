@@ -23,3 +23,6 @@ go.work.sum
 
 # env file
 .env
+
+# just create a folder called tls and create the certificate yourself
+lets-go-book/snippetbox/tls
