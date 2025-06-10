@@ -12,16 +12,20 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// Update our snippetCreateForm struct to include struct tags which tell the
-// decoder how to map HTML form values into the different struct fields. So, for
-// example, here we're telling the decoder to store the value from the HTML form
-// input with the name "title" in the Title field. The struct tag `form:"-"`
-// tells the decoder to completely ignore a field during decoding.
 type snippetCreateForm struct {
 	Title string `form:"title"`
 	Content string `form:"content"`
 	Expires int `form:"expires"`
 	validator.Validator  `form:"-"`
+}
+
+// Create  a new userSignupForm struct.
+type userSignupForm struct {
+	Name string `form:"name"`
+	Email string `form:"email"`
+	Password string `form:"password"`
+	validator.Validator `form:"-"`
+
 }
 
 // Change the signature of the home handler so it is defined as a method against
@@ -133,8 +137,12 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 
+// Update the handler so it displays the signup page.
+
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Displaying a HTML form for signing up a new user...")
+	data := app.newTemplateData(r)
+	data.Form = userSignupForm{}
+	app.render(w, http.StatusOK, "signup.tmpl", data)
 }
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
